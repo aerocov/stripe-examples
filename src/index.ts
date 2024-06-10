@@ -7,42 +7,42 @@ import { demoResumeSubscription } from 'demo-resume-subscription';
 import { demoResumeSubscriptionWithSchedule } from 'demo-resume-subscription-with-schedule';
 
 type Demo =
-  | 'CreateProducts'
-  | 'CancelSubscription'
-  | 'CancelSubscriptionWithSchedule'
-  | 'ResumeSubscription'
-  | 'ResumeSubscriptionWithSchedule';
+  | 'create-products'
+  | 'cancel-subscription'
+  | 'cancel-subscription-with-schedule'
+  | 'resume-subscription'
+  | 'resume-subscription-with-schedule';
 
-const demo: Demo = (process.argv[2] as Demo) || 'ResumeSubscriptionWithSchedule';
+const demo: Demo = (process.argv[2] as Demo) || 'cancel-subscription';
 
 switch (demo) {
-  case 'CreateProducts':
+  case 'create-products':
     console.log('Running demoCreateProducts...');
     demoCreateProducts().then(() => console.log('demoCreateProducts done!'));
     break;
 
-  case 'CancelSubscription':
+  case 'cancel-subscription':
     console.log('Running demoCancelSubscription...');
     demoCancelSubscription().then(() =>
       console.log('demoCancelSubscription done!')
     );
     break;
 
-  case 'CancelSubscriptionWithSchedule':
+  case 'cancel-subscription-with-schedule':
     console.log('Running demoCancelSubscriptionWithSchedule...');
     demoCancelSubscriptionWithSchedule().then(() =>
       console.log('demoCancelSubscriptionWithSchedule done!')
     );
     break;
 
-  case 'ResumeSubscription':
+  case 'resume-subscription':
     console.log('Running demoResumeSubscription...');
     demoResumeSubscription().then(() =>
       console.log('demoResumeSubscription done!')
     );
     break;
 
-  case 'ResumeSubscriptionWithSchedule':
+  case 'resume-subscription-with-schedule':
     demoResumeSubscriptionWithSchedule().then(() =>
       console.log('demoResumeSubscriptionWithSchedule done!')
     );
