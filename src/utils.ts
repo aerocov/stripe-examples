@@ -15,6 +15,51 @@ export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+type AnyObject = { [key: string]: any };
+
+export function cleanObject(obj: any): any {
+  if (Array.isArray(obj)) {
+    const cleanedArray = obj
+      .map(cleanObject)
+      .filter((item) => item != null && item !== '');
+    return cleanedArray.length > 0 ? cleanedArray : null;
+  } else if (typeof obj === 'object' && obj !== null) {
+    const cleanedObj: AnyObject = {};
+    Object.keys(obj).forEach((key) => {
+      const value = cleanObject(obj[key]);
+      if (
+        value != null &&
+        value !== '' &&
+        (!Array.isArray(value) || value.length > 0)
+      ) {
+        cleanedObj[key] = value;
+      }
+    });
+    return Object.keys(cleanedObj).length > 0 ? cleanedObj : null;
+  } else {
+    return obj;
+  }
+}
+
+export function calculateRemainingMonthsToAnnualRenewal(
+  start: Date | string,
+  cancel: Date | string
+) {
+  const startDate = moment(start);
+  const cancelDate = moment(cancel);
+  const annualRenewalDate = startDate.clone().add(1, 'year');
+
+  const remainingMonthsBeforeCancellation = annualRenewalDate.diff(
+    cancelDate,
+    'months'
+  );
+
+  return {
+    remainingMonthsBeforeCancellation,
+    annualRenewalDate: annualRenewalDate.toDate(),
+  };
+}
+
 /**
  *
  * This function creates a customer with a default payment method
@@ -119,7 +164,7 @@ export async function waitForSubscriptionStatus(
   subscriptionId: string,
   expectedStatus: string
 ) {
-  let count = 0;
+  let count = 1;
   const maxPollCount = 60;
 
   let subscription = await stripe.subscriptions.retrieve(subscriptionId);
