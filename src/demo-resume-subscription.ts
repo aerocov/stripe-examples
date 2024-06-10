@@ -1,6 +1,7 @@
 import { DEMO_PRICE_LOOKUP_KEYS } from 'demo-create-products';
 import moment from 'moment';
 import {
+  advanceClockBy,
   advanceClockTo,
   createStripe,
   createSubscription,
@@ -9,10 +10,24 @@ import {
   waitForSubscriptionStatus,
 } from 'utils';
 
-export async function demoCancelSubscription() {
+/**
+ *
+ * In this demo, we want to show how to resume a subscription after it has been canceled.
+ *
+ * The simulation is as follows:
+ *
+ * 1. create a customer and a monthly subscription for them.
+ * 2. cancel the subscription at the end of the current period.
+ * 3. advance the clock by a couple of days.
+ * 4. resume the subscription by updating the subscription.
+ * 5. advance the clock to the cancellation date.
+ * 6. retrieve the subscription and the invoices paid by the customer.
+ *
+ */
+export async function demoResumeSubscription() {
   const stripe = createStripe();
   const runId = generateRunId();
-  
+
   const name = `Hoss Monthly ${runId}`;
   const email = `hoss+m${runId}@aerocov.dev`;
 
@@ -34,7 +49,6 @@ export async function demoCancelSubscription() {
   // create a subscription
   const { subscription } = await createSubscription(subscriptionSpecs);
 
-  // get the start and end dates of the current period
   const start = moment.unix(subscription.current_period_start).toDate();
   const end = moment.unix(subscription.current_period_end).toDate();
 
@@ -43,17 +57,24 @@ export async function demoCancelSubscription() {
     cancel_at_period_end: true,
   });
 
+  // advance the clock by a couple of days
+  await advanceClockBy(stripe, testClock.id, { days: 2 });
+
+  // resume by updating the subscription
+  await stripe.subscriptions.update(subscription.id, {
+    cancel_at_period_end: false,
+  });
+
   // advance the clock to the cancellation date
   await advanceClockTo(stripe, testClock.id, end);
 
-  // wait for subscription to be canceled
+  // assert the subscription to be active
   const updatedSubscription = await waitForSubscriptionStatus(
     stripe,
     subscription.id,
-    'canceled'
+    'active'
   );
 
-  // get all invoices for the subscription
   const invoices = await stripe.invoices.list({
     subscription: updatedSubscription.id,
     limit: 100,

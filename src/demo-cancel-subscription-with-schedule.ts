@@ -141,7 +141,7 @@ export async function demoCancelSubscriptionWithSchedule() {
     subscriptionStatus: updatedSubscription.status,
     scheduledSubscriptionStatus: scheduledSubscription.status,
     lastInvoice: updatedSubscription.latest_invoice,
-    noOfInvoicesPaid: invoices.data.map((i) => i.paid).length,
+    noOfInvoicesPaid: invoices.data.filter((i) => i.paid).length,
   });
 
   // deleting a test clock will delete all resources associated with it, so it could give false positives when testing.
