@@ -1,18 +1,19 @@
 import 'dotenv/config';
 
-import { demoCreateProducts } from 'demo-create-products';
 import { demoCancelSubscription } from 'demo-cancel-subscription';
 import { demoCancelSubscriptionWithSchedule } from 'demo-cancel-subscription-with-schedule';
+import { demoCreateProducts } from 'demo-create-products';
 import { demoResumeSubscription } from 'demo-resume-subscription';
+import { demoResumeSubscriptionWithSchedule } from 'demo-resume-subscription-with-schedule';
 
 type Demo =
   | 'CreateProducts'
   | 'CancelSubscription'
   | 'CancelSubscriptionWithSchedule'
-  | 'ResumeSubscription';
+  | 'ResumeSubscription'
+  | 'ResumeSubscriptionWithSchedule';
 
-const demo: Demo =
-  (process.argv[2] as Demo) || 'ResumeSubscription';
+const demo: Demo = (process.argv[2] as Demo) || 'ResumeSubscriptionWithSchedule';
 
 switch (demo) {
   case 'CreateProducts':
@@ -38,6 +39,12 @@ switch (demo) {
     console.log('Running demoResumeSubscription...');
     demoResumeSubscription().then(() =>
       console.log('demoResumeSubscription done!')
+    );
+    break;
+
+  case 'ResumeSubscriptionWithSchedule':
+    demoResumeSubscriptionWithSchedule().then(() =>
+      console.log('demoResumeSubscriptionWithSchedule done!')
     );
     break;
 

@@ -9,6 +9,18 @@ import {
   waitForSubscriptionStatus,
 } from 'utils';
 
+
+/**
+ * In this demo, we want to show how to cancel a subscription. 
+ * 
+ * The simulation is as follows:
+ * 1. create a customer and a monthly subscription for them.
+ * 2. cancel the subscription at the end of the current period.
+ * 3. advance the clock to the end of the billing period.
+ * 4. assert the subscription is cancelled.
+ * 5. retrieve subscription and invoices data.
+ * 
+ */
 export async function demoCancelSubscription() {
   const stripe = createStripe();
   const runId = generateRunId();
@@ -46,7 +58,7 @@ export async function demoCancelSubscription() {
   // advance the clock to the cancellation date
   await advanceClockTo(stripe, testClock.id, end);
 
-  // wait for subscription to be canceled
+  // assert that the subscription is canceled
   const updatedSubscription = await waitForSubscriptionStatus(
     stripe,
     subscription.id,

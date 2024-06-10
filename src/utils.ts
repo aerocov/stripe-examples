@@ -254,6 +254,7 @@ export async function advanceClockTo(
   }
 
   // then advance to the exact date to compensate for rounding errors
+  console.log(`advancing clock to ${target.toDate()}...`);
   await stripe.testHelpers.testClocks.advance(testClockId, {
     frozen_time: target.unix(),
   });
