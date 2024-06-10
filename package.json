@@ -36,6 +36,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch ./src/index.ts",
-    "start": "tsx ./src/index.ts"
+    "start": "tsx ./src/index.ts",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   }
 }
