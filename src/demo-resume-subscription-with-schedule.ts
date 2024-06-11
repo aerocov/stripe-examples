@@ -59,7 +59,7 @@ export async function demoResumeSubscriptionWithSchedule() {
 
   // calculate the remaining months before cancellation, cancelling 1 month and 15 days after the start date
   const start = moment.unix(subscription.start_date);
-  const cancel = start.clone().add(1, 'months').add(15, 'days');
+  const cancel = start.clone().add(0, 'years').add(1, 'months').add(15, 'days');
 
   const { annualRenewalDate, remainingMonthsBeforeCancellation, error } =
     calculateRemainingMonthsToAnnualRenewal(start.toDate(), cancel.toDate());
@@ -94,26 +94,33 @@ export async function demoResumeSubscriptionWithSchedule() {
   const defaultPhase: Stripe.SubscriptionScheduleUpdateParams.Phase =
     cleanObject(scheduledSubscription.phases[0]);
 
-  // 2. create the exhaustion phase
-  const exhaustionPhase: Stripe.SubscriptionScheduleUpdateParams.Phase = {
-    items: [
-      {
-        price: subscription.items.data[0].price.id,
-      },
-    ],
-    iterations: remainingMonthsBeforeCancellation,
-  };
+  const phases = [defaultPhase];
+
+  // 2. create the exhaustion phase if there are remaining months before cancellation
+  if (remainingMonthsBeforeCancellation > 0) {
+    const exhaustionPhase: Stripe.SubscriptionScheduleUpdateParams.Phase = {
+      items: [
+        {
+          price: subscription.items.data[0].price.id,
+        },
+      ],
+      iterations: remainingMonthsBeforeCancellation,
+    };
+
+    phases.push(exhaustionPhase);
+  }
 
   // 3. update the schedule with the default and exhaustion phases
   scheduledSubscription = await stripe.subscriptionSchedules.update(
     scheduledSubscription.id,
     {
       end_behavior: 'cancel',
-      phases: [defaultPhase, exhaustionPhase],
+      phases,
     }
   );
 
-  // advance the clock by a couple of months
+  // advance the clock by a couple of months, 
+  // note this must be before the annual renewal date where the subscription will be cancelled
   await advanceClockBy(stripe, testClock.id, { months: 2 });
 
   // resume the subscription by releasing the schedule, not preserving the cancel date

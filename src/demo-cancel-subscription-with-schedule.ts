@@ -72,8 +72,12 @@ export async function demoCancelSubscriptionWithSchedule() {
   // advance the clock to the cancellation date
   await advanceClockTo(stripe, testClock.id, cancel.toDate());
 
-  // can also be canceled by updating the subscription when the remaining months are 0
+  // NOTE: 
+  // when the remainingMonthsBeforeCancellation=0, the subscription can also be canceled by updating the subscription
+  //
   // await stripe.subscriptions.update(subscription.id, { cancel_at_period_end: true });
+  // return { subscription, remainingMonthsBeforeCancellation };
+  //
 
   // migrate the existing subscription to be managed by a subscription schedule.
   //
