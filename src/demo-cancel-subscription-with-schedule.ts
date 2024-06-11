@@ -15,12 +15,12 @@ import {
 /**
  *
  * In this demo, we want to show how to cancel a subscription in the future with a subscription schedule.
- * 
+ *
  * We have a monthly subscription but we want to complete the subscription only after a year from the start date.
  * This in practice allows to implement yearly subscriptions with monthly billing.
- * 
+ *
  * The simulation is as follows:
- * 
+ *
  * 1. create a customer and a monthly subscription for them.
  * 2. customer requests to cancel the subscription one month and 15 days after creation.
  * 3. advance the clock to the cancellation date.
@@ -57,16 +57,23 @@ export async function demoCancelSubscriptionWithSchedule() {
   // create a subscription
   const { subscription } = await createSubscription(subscriptionSpecs);
 
-  // calculate the remaining months before cancellation, 
-  // cancelling 1 month and 15 days after the start date
+  // calculate the remaining months before cancellation,
+  // cancelling at some point in the future
   const start = moment.unix(subscription.start_date);
-  const cancel = start.clone().add(1, 'months').add(15, 'days');
-  
-  const { annualRenewalDate, remainingMonthsBeforeCancellation } =
+  const cancel = start.clone().add(0, 'years').add(1, 'months').add(15, 'days');
+
+  const { annualRenewalDate, remainingMonthsBeforeCancellation, error } =
     calculateRemainingMonthsToAnnualRenewal(start.toDate(), cancel.toDate());
+
+  if (!annualRenewalDate) {
+    throw new Error(error);
+  }
 
   // advance the clock to the cancellation date
   await advanceClockTo(stripe, testClock.id, cancel.toDate());
+
+  // can also be canceled by updating the subscription when the remaining months are 0
+  // await stripe.subscriptions.update(subscription.id, { cancel_at_period_end: true });
 
   // migrate the existing subscription to be managed by a subscription schedule.
   //
@@ -91,22 +98,28 @@ export async function demoCancelSubscriptionWithSchedule() {
   const defaultPhase: Stripe.SubscriptionScheduleUpdateParams.Phase =
     cleanObject(scheduledSubscription.phases[0]);
 
-  // 2. create the exhaustion phase
-  const exhaustionPhase: Stripe.SubscriptionScheduleUpdateParams.Phase = {
-    items: [
-      {
-        price: subscription.items.data[0].price.id,
-      },
-    ],
-    iterations: remainingMonthsBeforeCancellation,
-  };
+  const phases = [defaultPhase];
+
+  // 2. create the exhaustion phase if there are remaining months before cancellation
+  if (remainingMonthsBeforeCancellation > 0) {
+    const exhaustionPhase: Stripe.SubscriptionScheduleUpdateParams.Phase = {
+      items: [
+        {
+          price: subscription.items.data[0].price.id,
+        },
+      ],
+      iterations: remainingMonthsBeforeCancellation,
+    };
+
+    phases.push(exhaustionPhase);
+  }
 
   // 3. update the schedule with the default and exhaustion phases
   scheduledSubscription = await stripe.subscriptionSchedules.update(
     scheduledSubscription.id,
     {
       end_behavior: 'cancel',
-      phases: [defaultPhase, exhaustionPhase],
+      phases,
     }
   );
 

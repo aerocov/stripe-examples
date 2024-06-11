@@ -61,8 +61,12 @@ export async function demoResumeSubscriptionWithSchedule() {
   const start = moment.unix(subscription.start_date);
   const cancel = start.clone().add(1, 'months').add(15, 'days');
 
-  const { annualRenewalDate, remainingMonthsBeforeCancellation } =
+  const { annualRenewalDate, remainingMonthsBeforeCancellation, error } =
     calculateRemainingMonthsToAnnualRenewal(start.toDate(), cancel.toDate());
+
+  if (!annualRenewalDate) {
+    throw new Error(error);
+  }
 
   // advance the clock to the cancellation date
   await advanceClockTo(stripe, testClock.id, cancel.toDate());
