@@ -47,7 +47,16 @@ export function calculateRemainingMonthsToAnnualRenewal(
 ) {
   const startDate = moment(start);
   const cancelDate = moment(cancel);
-  const annualRenewalDate = startDate.clone().add(1, 'year');
+
+  if (cancelDate.isBefore(startDate)) {
+    return {
+      error: 'Cancellation date cannot be before the start date.',
+    };
+  }
+
+  const yearsBetween = Math.ceil(cancelDate.diff(startDate, 'years', true));
+
+  const annualRenewalDate = startDate.clone().add(yearsBetween, 'years');
 
   const remainingMonthsBeforeCancellation = annualRenewalDate.diff(
     cancelDate,
