@@ -2,6 +2,7 @@ import { DEMO_PRICE_LOOKUP_KEYS } from 'demo-create-products';
 import moment from 'moment';
 import Stripe from 'stripe';
 import {
+  SubscriptionSpecs,
   advanceClockBy,
   advanceClockTo,
   calculateRemainingMonthsToAnnualRenewal,
@@ -43,7 +44,7 @@ export async function demoResumeSubscriptionWithSchedule() {
   const testClock = await createTestClock(stripe, name);
 
   // subscription details
-  const subscriptionSpecs = {
+  const subscriptionSpecs: SubscriptionSpecs = {
     stripe,
     priceLookupKey: DEMO_PRICE_LOOKUP_KEYS.premiumMonthly,
     name,
@@ -57,10 +58,11 @@ export async function demoResumeSubscriptionWithSchedule() {
   // create a subscription
   const { subscription } = await createSubscription(subscriptionSpecs);
 
-  // calculate the remaining months before cancellation, cancelling 1 month and 15 days after the start date
+  // request cancellation at some point in the future
   const start = moment.unix(subscription.start_date);
   const cancel = start.clone().add(0, 'years').add(1, 'months').add(15, 'days');
 
+  // calculate the remaining months before cancellation
   const { annualRenewalDate, remainingMonthsBeforeCancellation, error } =
     calculateRemainingMonthsToAnnualRenewal(start.toDate(), cancel.toDate());
 
@@ -68,7 +70,7 @@ export async function demoResumeSubscriptionWithSchedule() {
     throw new Error(error);
   }
 
-  // advance the clock to the cancellation date
+  // advance the clock to the cancellation request date
   await advanceClockTo(stripe, testClock.id, cancel.toDate());
 
   // migrate the existing subscription to be managed by a subscription schedule.
@@ -119,7 +121,7 @@ export async function demoResumeSubscriptionWithSchedule() {
     }
   );
 
-  // advance the clock by a couple of months, 
+  // advance the clock by a couple of months,
   // note this must be before the annual renewal date where the subscription will be cancelled
   await advanceClockBy(stripe, testClock.id, { months: 2 });
 

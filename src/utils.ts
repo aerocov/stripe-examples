@@ -78,6 +78,17 @@ export function calculateRemainingMonthsToAnnualRenewal(
  * https://docs.stripe.com/api/subscriptions/create#create_subscription-payment_behavior
  *
  */
+
+export type SubscriptionSpecs = {
+  stripe: Stripe;
+  priceLookupKey: string;
+  name: string;
+  email: string;
+  subscriptionParams?: Omit<Stripe.SubscriptionCreateParams, 'customer'>;
+  metadata?: any;
+  testClockId?: string;
+};
+
 export async function createSubscription({
   stripe,
   priceLookupKey,
@@ -86,15 +97,7 @@ export async function createSubscription({
   subscriptionParams = {},
   metadata,
   testClockId,
-}: {
-  stripe: Stripe;
-  priceLookupKey: string;
-  name: string;
-  email: string;
-  subscriptionParams?: Omit<Stripe.SubscriptionCreateParams, 'customer'>;
-  metadata?: any;
-  testClockId?: string;
-}) {
+}: SubscriptionSpecs) {
   const customer = await createCustomer(
     stripe,
     name,

@@ -2,6 +2,7 @@ import { DEMO_PRICE_LOOKUP_KEYS } from 'demo-create-products';
 import moment from 'moment';
 import Stripe from 'stripe';
 import {
+  SubscriptionSpecs,
   advanceClockTo,
   calculateRemainingMonthsToAnnualRenewal,
   cleanObject,
@@ -43,7 +44,7 @@ export async function demoCancelSubscriptionWithSchedule() {
   const testClock = await createTestClock(stripe, name);
 
   // subscription details
-  const subscriptionSpecs = {
+  const subscriptionSpecs: SubscriptionSpecs = {
     stripe,
     priceLookupKey: DEMO_PRICE_LOOKUP_KEYS.premiumMonthly,
     name,
@@ -57,11 +58,11 @@ export async function demoCancelSubscriptionWithSchedule() {
   // create a subscription
   const { subscription } = await createSubscription(subscriptionSpecs);
 
-  // calculate the remaining months before cancellation,
-  // cancelling at some point in the future
+  // request cancellation at some point in the future
   const start = moment.unix(subscription.start_date);
   const cancel = start.clone().add(0, 'years').add(1, 'months').add(15, 'days');
 
+  // calculate the remaining months before the next annual renewal date
   const { annualRenewalDate, remainingMonthsBeforeCancellation, error } =
     calculateRemainingMonthsToAnnualRenewal(start.toDate(), cancel.toDate());
 
@@ -69,10 +70,10 @@ export async function demoCancelSubscriptionWithSchedule() {
     throw new Error(error);
   }
 
-  // advance the clock to the cancellation date
+  // advance the clock to the cancellation request date
   await advanceClockTo(stripe, testClock.id, cancel.toDate());
 
-  // NOTE: 
+  // NOTE:
   // when the remainingMonthsBeforeCancellation=0, the subscription can also be canceled by updating the subscription
   //
   // await stripe.subscriptions.update(subscription.id, { cancel_at_period_end: true });

@@ -5,15 +5,18 @@ import { demoCancelSubscriptionWithSchedule } from 'demo-cancel-subscription-wit
 import { demoCreateProducts } from 'demo-create-products';
 import { demoResumeSubscription } from 'demo-resume-subscription';
 import { demoResumeSubscriptionWithSchedule } from 'demo-resume-subscription-with-schedule';
+import { demoCancelSubscriptionNoWithCancelAt } from 'demo-cancel-subscription-with-cancel-at';
 
 type Demo =
   | 'create-products'
   | 'cancel-subscription'
   | 'cancel-subscription-with-schedule'
   | 'resume-subscription'
-  | 'resume-subscription-with-schedule';
+  | 'resume-subscription-with-schedule'
+  | 'cancel-subscription-with-cancel-at';
 
-const demo: Demo = (process.argv[2] as Demo) || 'cancel-subscription';
+const demo: Demo =
+  (process.argv[2] as Demo) || 'cancel-subscription-with-cancel-at';
 
 switch (demo) {
   case 'create-products':
@@ -45,6 +48,13 @@ switch (demo) {
   case 'resume-subscription-with-schedule':
     demoResumeSubscriptionWithSchedule().then(() =>
       console.log('demoResumeSubscriptionWithSchedule done!')
+    );
+    break;
+
+  case 'cancel-subscription-with-cancel-at':
+    console.log('Running demoCancelSubscriptionNoWithCancelAt...');
+    demoCancelSubscriptionNoWithCancelAt().then(() =>
+      console.log('demoCancelSubscriptionNoWithCancelAt done!')
     );
     break;
 

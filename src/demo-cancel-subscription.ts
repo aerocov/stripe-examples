@@ -1,6 +1,7 @@
 import { DEMO_PRICE_LOOKUP_KEYS } from 'demo-create-products';
 import moment from 'moment';
 import {
+  SubscriptionSpecs,
   advanceClockTo,
   createStripe,
   createSubscription,
@@ -32,7 +33,7 @@ export async function demoCancelSubscription() {
   const testClock = await createTestClock(stripe, name);
 
   // subscription details
-  const subscriptionSpecs = {
+  const subscriptionSpecs: SubscriptionSpecs = {
     stripe,
     priceLookupKey: DEMO_PRICE_LOOKUP_KEYS.premiumMonthly,
     name,
